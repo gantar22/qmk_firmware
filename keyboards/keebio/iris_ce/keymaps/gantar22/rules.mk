@@ -1,0 +1,5 @@
+TRI_LAYER_ENABLE = yes
+COMBO_ENABLE = yes
+VPATH += keyboards/gboards
+KEY_OVERRIDE_ENABLE = yes
+MOUSEKEY_ENABLE = yes
