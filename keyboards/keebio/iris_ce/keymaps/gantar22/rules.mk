@@ -3,3 +3,4 @@ COMBO_ENABLE = yes
 VPATH += keyboards/gboards
 KEY_OVERRIDE_ENABLE = yes
 MOUSEKEY_ENABLE = yes
+REPEAT_KEY_ENABLE = yes

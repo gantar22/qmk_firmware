@@ -12,4 +12,3 @@
 #define MOUSEKEY_MOVE_DELTA 1
 
 #define SWAP_HANDS_ENABLE = YES
-
