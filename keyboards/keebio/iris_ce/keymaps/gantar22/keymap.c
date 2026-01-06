@@ -9,10 +9,8 @@
 
 enum custom_layers {
      _COLEMAK_DH,
-     _LOWER,
-     _RAISE,
-     _SYM,
      _NAV,
+     _SYM,
      _NUM
 };
 
@@ -33,6 +31,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
+  [_NAV] = LAYOUT(
+     _______, _______, _______, _______, _______, _______,                              _______, _______, _______, _______, _______, _______,
+     _______, _______, _______, _______, _______, KC_VOLU,                              KC_MNXT, MS_WHLL, MS_WHLD, MS_WHLU, MS_WHLR, _______,
+     _______, KC_LEFT, KC_UP  , KC_DOWN, KC_RGHT, KC_MUTE,                              KC_MPLY, MS_LEFT, MS_DOWN, MS_UP  , MS_RGHT, _______,
+     _______, KC_HOME, KC_PGUP, KC_PGDN, KC_END,  KC_VOLD, _______,            _______, KC_MPRV, MS_BTN1, MS_BTN2, _______, _______, _______,
+                                      _______, _______, _______,                     _______, _______, _______
+  ),
+
   [_SYM] = LAYOUT(
      _______, _______, _______, _______, _______, _______,                              _______, _______, _______, _______, _______,    _______,
      _______, KC_LBRC, KC_RBRC, KC_LCBR, KC_RCBR, KC_DLR,                               KC_CIRC, KC_PIPE, KC_AMPR, KC_TILD, KC_GRV,     _______,
@@ -41,22 +47,39 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                       _______, _______, _______,                     _______, _______, _______
   ),
 
-  [_NAV] = LAYOUT(
-     _______, _______, _______, _______, _______, _______,                              _______, _______, _______, _______, _______, _______,
-     _______, _______, _______, _______, _______, _______,                              _______, MS_WHLL, MS_WHLD, MS_WHLU, MS_WHLR, _______,
-     _______, KC_LEFT, KC_UP  , KC_DOWN, KC_RGHT, _______,                              _______, MS_LEFT, MS_DOWN, MS_UP  , MS_RGHT, _______,
-     _______, KC_HOME, KC_PGUP, KC_PGDN, KC_END,  _______, _______,            _______, _______, MS_BTN1, MS_BTN2, _______, _______, _______,
-                                      _______, _______, _______,                     _______, _______, _______
-  ),
-
   [_NUM] = LAYOUT(
      _______, _______, _______, _______, _______, _______,                              _______, _______, _______, _______, _______, _______,
      _______, _______, KC_7,    KC_8,    KC_9,    _______,                              _______, KC_F1  , KC_F4  , KC_F7  , KC_F10 , _______,
-     _______, KC_0   , KC_4,    KC_5,    KC_6,    _______,                              _______, KC_F2  , KC_F5  , KC_F8  , KC_F11 , _______,
-     _______, _______, KC_1   , KC_2   , KC_3   , _______, _______,            _______, _______, KC_F3  , KC_F6  , KC_F9  , KC_F12 , _______,
+     _______, KC_0   , KC_4,    KC_5,    KC_6,    KC_DOT ,                              _______, KC_F2  , KC_F5  , KC_F8  , KC_F11 , _______,
+     _______, _______, KC_1   , KC_2   , KC_3   , KC_COMM, _______,            _______, _______, KC_F3  , KC_F6  , KC_F9  , KC_F12 , _______,
                                       _______, _______, _______,                     _______, _______, _______
   )
 };
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case KC_ESC:
+            if (record->event.pressed) {
+                // 1. Clear physical/standard modifiers
+                clear_mods();
+
+                // 2. Clear One-Shot modifiers (if you use them)
+                clear_oneshot_mods();
+
+                // 3. Clear any locked layers (optional)
+                layer_clear();
+
+                // 4. Send the actual Escape keypress
+                register_code(KC_ESC);
+            } else {
+                unregister_code(KC_ESC);
+            }
+            return false; // Skip default handling since we handled it manually
+
+        default:
+            return true; // Process all other keys normally
+    }
+}
 
 const key_override_t delete_key_override = ko_make_basic(MOD_MASK_ALT, KC_BSPC, KC_DEL);
 const key_override_t shift_comma_override = ko_make_basic(MOD_MASK_SHIFT, KC_COMM, KC_SCLN);
@@ -85,4 +108,35 @@ const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
     [8] = {{0, 3}, {1, 3}, {2, 3}, {3, 3}, {4, 3}, {5, 3}}, // Row 8 -> Row 3
     [9] = {{0, 4}, {1, 4}, {2, 4}, {3, 4}, {4, 4}, {5, 4}}  // Row 9 -> Row 4
 };
+#endif
+
+void keyboard_post_init_user(void) {
+    // Force RGB on and set a high brightness level on startup
+    rgb_matrix_enable_noeeprom();
+    rgb_matrix_sethsv_noeeprom(HSV_WHITE);
+}
+
+#ifdef RGB_MATRIX_ENABLE
+bool rgb_matrix_indicators_user(void) {
+    // Check for Shift (Physical, One-shot) OR Caps Lock
+    if (get_mods() & MOD_MASK_SHIFT ||
+        get_oneshot_mods() & MOD_MASK_SHIFT ||
+        host_keyboard_led_state().caps_lock) {
+
+        uint8_t r = 255, g = 0, b = 0; // Red
+
+        // Left Hand Index Column
+        rgb_matrix_set_color(8, r, g, b);
+        rgb_matrix_set_color(9, r, g, b);
+        rgb_matrix_set_color(20, r, g, b);
+        rgb_matrix_set_color(21, r, g, b);
+
+        // Right Hand Index Column
+        rgb_matrix_set_color(43, r, g, b);
+        rgb_matrix_set_color(44, r, g, b);
+        rgb_matrix_set_color(55, r, g, b);
+        rgb_matrix_set_color(56, r, g, b);
+    }
+    return true;
+}
 #endif
