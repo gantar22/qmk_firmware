@@ -27,13 +27,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   //├────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,    KC_HOME,          KC_END,  KC_K,    KC_H,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
   //└────────┴────────┴────────┴───┬────┴───┬────┴───┬────┴───┬────┘        └───┬────┴───┬────┴───┬────┴───┬────┴────────┴────────┴────────┘
-                                    SH_OS,   OSL(_NAV), KC_SPC,                  KC_ENT,  QK_REP,  SH_OS
+                                    SH_OS,   OSL(_NAV), KC_SPC,                  QK_LEAD, KC_ENT,  SH_OS
                                 // └────────┴────────┴────────┘                 └────────┴────────┴────────┘
   ),
 
   [_NAV] = LAYOUT(
      _______, _______, _______, _______, _______, _______,                              _______, _______, _______, _______, _______, _______,
-     _______, _______, _______, _______, _______, KC_VOLU,                              KC_MNXT, MS_WHLL, MS_WHLD, MS_WHLU, MS_WHLR, _______,
+     _______, _______, _______, _______, _______, KC_VOLU, /* mov tab,ent,bks,esc here*/KC_MNXT, MS_WHLL, MS_WHLD, MS_WHLU, MS_WHLR, _______,
      _______, KC_LEFT, KC_UP  , KC_DOWN, KC_RGHT, KC_MUTE,                              KC_MPLY, MS_LEFT, MS_DOWN, MS_UP  , MS_RGHT, _______,
      _______, KC_HOME, KC_PGUP, KC_PGDN, KC_END,  KC_VOLD, _______,            _______, KC_MPRV, MS_BTN1, MS_BTN2, _______, KC_PSCR, _______,
                                       _______, _______, _______,                     _______, _______, _______
@@ -42,7 +42,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_SYM] = LAYOUT(
      _______, _______, _______, _______, _______, _______,                              _______, _______, _______, _______, _______, _______,
      _______, KC_LBRC, KC_RBRC, KC_LCBR, KC_RCBR, KC_DLR,                               KC_CIRC, KC_PIPE, KC_AMPR, KC_TILD, KC_GRV,  _______,
-     _______, KC_QUOT, KC_LPRN, KC_RPRN, KC_SCLN, KC_COLN,                              KC_AT,   KC_PLUS, KC_EQL,  KC_EXLM, KC_DQT,  _______,
+     _______, KC_QUOT, KC_LPRN, KC_RPRN, KC_SCLN, KC_COLN,/*rotate & +ent -coln       */KC_AT,   KC_PLUS, KC_EQL,  KC_EXLM, KC_DQT,  _______,
      _______, KC_LT,   KC_GT,   KC_MINS, KC_BSLS, KC_PERC, _______,            _______, KC_HASH, KC_ASTR, KC_UNDS, KC_SLSH, KC_QUES, _______,
                                       _______, _______, _______,                     _______, _______, _______
   ),
@@ -113,30 +113,23 @@ const keypos_t PROGMEM hand_swap_config[MATRIX_ROWS][MATRIX_COLS] = {
 void keyboard_post_init_user(void) {
     // Force RGB on and set a high brightness level on startup
     rgb_matrix_enable_noeeprom();
-    rgb_matrix_sethsv_noeeprom(HSV_WHITE);
+//    rgb_matrix_sethsv_noeeprom(HSV_WHITE);
 }
 
 #ifdef RGB_MATRIX_ENABLE
-bool rgb_matrix_indicators_user(void) {
-    // Check for Shift (Physical, One-shot) OR Caps Lock
-    if (get_mods() & MOD_MASK_SHIFT ||
-        get_oneshot_mods() & MOD_MASK_SHIFT ||
-        host_keyboard_led_state().caps_lock) {
-
-        uint8_t r = 255, g = 0, b = 0; // Red
-
-        // Left Hand Index Column
-        rgb_matrix_set_color(8, r, g, b);
-        rgb_matrix_set_color(9, r, g, b);
-        rgb_matrix_set_color(20, r, g, b);
-        rgb_matrix_set_color(21, r, g, b);
-
-        // Right Hand Index Column
-        rgb_matrix_set_color(43, r, g, b);
-        rgb_matrix_set_color(44, r, g, b);
-        rgb_matrix_set_color(55, r, g, b);
-        rgb_matrix_set_color(56, r, g, b);
-    }
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     return true;
 }
 #endif
+
+
+
+void leader_start_user(void) {
+    // Do something when the leader key is pressed
+}
+
+void leader_end_user(void) {
+    if (leader_sequence_one_key(KC_N)) {
+        layer_on(_NUM);
+    }
+}
